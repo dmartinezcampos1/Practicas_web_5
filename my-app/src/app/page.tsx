@@ -13,13 +13,13 @@ export default function Home() {
 
   async function loadPosts() {
     const data = await apiFetch<{ posts: Post[] }>(
-      `/posts?page=${page}`
-    )
+  `/api/posts?page=${page}`
+  )
     setPosts(prev => [...prev, ...data.posts])
   }
 
   useEffect(() => {
-  const token = getToken()
+  const token = getToken()  
   if (!token) {
     window.location.href = "/login"
     return
@@ -29,7 +29,7 @@ export default function Home() {
 }, [page])
 
   return (
-    <div className="container">
+    <div className="auth-card">
       <CreatePost onPostCreated={loadPosts} />
 
       {posts.map(post => (

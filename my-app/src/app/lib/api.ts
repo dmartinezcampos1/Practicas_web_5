@@ -2,26 +2,35 @@ import { getToken } from "./cookies"
 const API_URL = "https://backend-p4-klvc.onrender.com"
 
 export async function apiFetch<T>(
-  endpoint: string,
-  options: RequestInit = {}
+    url: string,
+    options?: RequestInit
 ): Promise<T> {
-  const token = getToken()
 
-  const res = await fetch(`${API_URL}${endpoint}`, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      "x-nombre": "TU_NOMBRE_AQUI",
-      ...(token && { Authorization: `Bearer ${token}` }),
-      ...options.headers,
-    },
-  })
+    const token = getToken()
 
-  if (res.status === 401 && typeof window !== "undefined") {
-    window.location.href = "/login"
-  }
+    const res = await fetch(`${API_URL}${url}`, {
+        method: options?.method || "GET",
+        headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            ...(options?.headers || {})
+        },
+        body: options?.body,
+    })
 
-  if (!res.ok) throw new Error("Error en la API")
+    const text = await res.text()
 
-  return res.json()
+    let data
+    try {
+        data = JSON.parse(text)
+    } catch {
+        console.error("Respuesta NO JSON:", text)
+        throw new Error("La API devolvió HTML o error (probablemente backend caído o ruta incorrecta)")
+    }
+
+    if (!res.ok) {
+        throw new Error(data?.error || "Error en la API")
+    }
+
+    return data
 }

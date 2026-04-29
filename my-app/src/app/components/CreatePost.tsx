@@ -13,7 +13,7 @@ export default function CreatePost({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
 
-    await apiFetch("/posts", {
+    await apiFetch("/api/posts", {
       method: "POST",
       body: JSON.stringify({ content }),
     })
