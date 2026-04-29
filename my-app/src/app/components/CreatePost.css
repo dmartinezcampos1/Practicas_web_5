@@ -1,0 +1,25 @@
+.create-post {
+  background: white;
+  padding: 12px;
+  border: 1px solid #e1e8ed;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.create-post textarea {
+  width: 100%;
+  border: none;
+  resize: none;
+  outline: none;
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.create-post button {
+  background: #1d9bf0;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+}

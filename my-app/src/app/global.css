@@ -1,0 +1,28 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: #f5f8fa;
+  color: #0f1419;
+}
+
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.load-more {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  background: #1d9bf0;
+  color: white;
+  border-radius: 20px;
+  cursor: pointer;
+  margin-top: 10px;
+}
