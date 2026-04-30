@@ -1,0 +1,35 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { deleteCookie, getCookie, TOKEN_COOKIE, USER_ID_COOKIE, USERNAME_COOKIE } from "@/lib/auth/token";
+import "./styles.css";
+
+const NavegadorPags = () => {
+  const [profileHref, setProfileHref] = useState("/profile/me");
+
+  useEffect(() => {
+    const uid = getCookie(USER_ID_COOKIE);
+    setProfileHref(uid ? `/profile/${uid}` : "/profile/me");
+  }, []);
+
+  return (
+    <div className="NavigatorContainer">
+      <Link className="NavigatorLink" href="/">Inicio</Link>
+      <Link className="NavigatorLink" href={profileHref}>Perfil</Link>
+      <Link
+        className="NavigatorLink"
+        href="/login"
+        onClick={() => {
+          deleteCookie(TOKEN_COOKIE);
+          deleteCookie(USER_ID_COOKIE);
+          deleteCookie(USERNAME_COOKIE);
+        }}
+      >
+        Logout
+      </Link>
+    </div>
+  );
+};
+
+export default NavegadorPags;

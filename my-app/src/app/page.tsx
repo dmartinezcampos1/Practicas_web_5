@@ -1,44 +1,98 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { apiFetch } from "./lib/api"
-import { Post } from "./lib/types"
-import PostCard from "./components/PostCard"
-import CreatePost from "./components/CreatePost"
-import { getToken } from "./lib/cookies"
+import { FormEvent, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import PostCard from "./components/PostCard/PostCard";
+import { getCookie, TOKEN_COOKIE } from "@/lib/auth/token";
+import { createPost, getPosts, retweetPost, likePost } from "@/lib/api/twitter";
+import type { PostResponse } from "@/types/twitter";
 
-export default function Home() {
-  const [posts, setPosts] = useState<Post[]>([])
-  const [page, setPage] = useState(1)
+const Home = () => {
+  const router = useRouter();
+  const [posts, setPosts] = useState<PostResponse[]>([]);
+  const [page, setPage] = useState(1);
+  const [hasNext, setHasNext] = useState(true);
+  const [content, setContent] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
-  async function loadPosts() {
-    const data = await apiFetch<{ posts: Post[] }>(
-  `/api/posts?page=${page}`
-  )
-    setPosts(prev => [...prev, ...data.posts])
-  }
+  const token = getCookie(TOKEN_COOKIE);
+
+  const load = async (newPage = 1) => {
+    if (!token) return router.push("/login");
+    try {
+      setError(null);
+      const result = await getPosts(newPage);
+      setPosts(result.posts);
+      setPage(result.pagina);
+      setHasNext(result.pagina < result.totalPaginas);
+    } catch {
+      setError("No se pudieron cargar las publicaciones.");
+    }
+  };
 
   useEffect(() => {
-  const token = getToken()  
-  if (!token) {
-    window.location.href = "/login"
-    return
-  }
+    void load(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  loadPosts()
-}, [page])
+  const onPublish = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!content.trim() || !token) return;
+    try {
+      setError(null);
+      await createPost(content);
+      setContent("");
+      await load(1);
+    } catch {
+      setError("No se pudo publicar.");
+    }
+  };
+
+  const onLike = async (id: string) => {
+    if (!token) return;
+    await likePost(id);
+    await load(page);
+  };
+
+  const onRetweet = async (id: string) => {
+    if (!token) return;
+    await retweetPost(id);
+    await load(page);
+  };
 
   return (
-    <div className="auth-card">
-      <CreatePost onPostCreated={loadPosts} />
+    <section className="pageSection">
+      <h1>Publicaciones</h1>
+      <form className="card" onSubmit={onPublish}>
+        <textarea
+          rows={4}
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          placeholder="Escribe algo..."
+          required
+        />
+        <button className="btn primary" type="submit">
+          Publicar
+        </button>
+      </form>
 
-      {posts.map(post => (
-        <PostCard key={post.id} post={post} />
+      {error && <p>{error}</p>}
+
+      {posts.map((post) => (
+        <PostCard key={post._id} post={post} onLike={onLike} onRetweet={onRetweet} />
       ))}
 
-      <button className="load-more" onClick={() => setPage(p => p + 1)}>
-        Más
-      </button>
-    </div>
-  )
-}
+      <div className="pagination">
+        <button className="btn" disabled={page <= 1} onClick={() => void load(page - 1)}>
+          Anterior
+        </button>
+        <span>Página {page}</span>
+        <button className="btn" disabled={!hasNext} onClick={() => void load(page + 1)}>
+          Siguiente
+        </button>
+      </div>
+    </section>
+  );
+};
+
+export default Home;

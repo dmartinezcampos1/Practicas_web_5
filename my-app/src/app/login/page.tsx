@@ -1,93 +1,65 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { apiFetch } from "../lib/api"
-import { setToken } from "../lib/cookies"
+import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
+import { loginUser, registerUser } from "@/lib/api/twitter";
+import { setCookie, TOKEN_COOKIE, USER_ID_COOKIE, USERNAME_COOKIE } from "@/lib/auth/token";
 
-export default function AuthPage() {
-    const [isLogin, setIsLogin] = useState(true)
-    const [email, setEmail] = useState("")
-    const [password, setPassword] = useState("")
-    const [username, setUsername] = useState("")
-    const [loading, setLoading] = useState(false)
+const LoginPage = () => {
+  const router = useRouter();
+  const [isRegister, setIsRegister] = useState(false);
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
-    async function handleSubmit(e: React.FormEvent) {
-        e.preventDefault()
-        setLoading(true)
+  const onSubmit = async (e: FormEvent) => {
+    e.preventDefault();
 
-        try {
-            const endpoint = isLogin ? "/api/auth/login" : "/api/auth/register"
+    try {
+      const auth = isRegister
+        ? await registerUser(username, email, password)
+        : await loginUser(email, password);
 
-            const body = isLogin
-                ? { email, password }
-                : { email, password, username }
-
-            const data = await apiFetch<any>(endpoint, {
-                method: "POST",
-                body: JSON.stringify(body),
-            })
-
-            if (isLogin) {
-                if (!data?.token) {
-                    alert("Error en login: no hay token")
-                    return
-                }
-
-                setToken(data.token)
-                document.cookie = `token=${data.token}; path=/`
-                window.location.href = "/"
-
-            } else {
-                alert("Usuario registrado correctamente")
-                setIsLogin(true)
-            }
-
-        } catch (err) {
-            console.error(err)
-            alert("Error en la petición atontao")
-        } finally {
-            setLoading(false)
-        }
+      setCookie(TOKEN_COOKIE, auth.token);
+      setCookie(USER_ID_COOKIE, auth.user._id);
+      setCookie(USERNAME_COOKIE, auth.user.username);
+      router.push("/");
+    } catch {
+      setError("No se pudo completar la autenticación.");
     }
+  };
 
-    return (
-        <div>
-            <h1>{isLogin ? "Login" : "Registro"}</h1>
+  return (
+    <section className="pageSection">
+      <h1>{isRegister ? "Registro" : "Login"}</h1>
+      <form className="card" onSubmit={onSubmit}>
+        {isRegister && (
+          <input
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder="Username"
+            required
+          />
+        )}
+        <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="Email" required />
+        <input
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          type="password"
+          placeholder="Contraseña"
+          required
+        />
+        <button className="btn primary" type="submit">
+          {isRegister ? "Crear cuenta" : "Entrar"}
+        </button>
+        <button className="btn" type="button" onClick={() => setIsRegister((prev) => !prev)}>
+          {isRegister ? "Ya tengo cuenta" : "Crear cuenta nueva"}
+        </button>
+      </form>
+      {error && <p>{error}</p>}
+    </section>
+  );
+};
 
-            <form onSubmit={handleSubmit}>
-                {!isLogin && (
-                    <input
-                        placeholder="username"
-                        value={username}
-                        onChange={e => setUsername(e.target.value)}
-                    />
-                )}
-
-                <input
-                    placeholder="email"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                />
-
-                <input
-                    type="password"
-                    placeholder="password"
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                />
-
-                <button type="submit" disabled={loading}>
-                    {loading
-                        ? "Cargando..."
-                        : isLogin
-                            ? "Entrar"
-                            : "Registrarse"}
-                </button>
-            </form>
-
-            <button onClick={() => setIsLogin(!isLogin)}>
-                Cambiar a {isLogin ? "registro" : "login"}
-            </button>
-        </div>
-    )
-}
+export default LoginPage;

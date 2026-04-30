@@ -1,0 +1,17 @@
+.NavigatorContainer {
+    display: flex;
+    gap: 12px;
+    padding: 10px;
+    background-color: #3366cc;
+    border: 1px solid #2255bb;
+  }
+  
+  .NavigatorLink {
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+  }
+  
+  .NavigatorLink:hover {
+    text-decoration: underline;
+  }

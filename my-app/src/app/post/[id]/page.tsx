@@ -1,25 +1,56 @@
-import { apiFetch } from "../../lib/api"
-import { Post, Comment } from "../../lib/types"
+"use client";
 
-interface Props {
-  params: { id: string }
-}
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import PostCard from "@/app/components/PostCard/PostCard";
+import { getCookie, TOKEN_COOKIE } from "@/lib/auth/token";
+import { getPostById, retweetPost, likePost} from "@/lib/api/twitter";
+import type { PostResponse } from "@/types/twitter";
 
-export default async function PostDetail({ params }: Props) {
-  const post = await apiFetch<Post>(`/posts/${params.id}`)
-  const comments = await apiFetch<Comment[]>(
-    `/posts/${params.id}/comments`
-  )
+const PostPage = () => {
+  const params = useParams<{ id: string }>();
+  const router = useRouter();
+  const [post, setPost] = useState<PostResponse | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const token = getCookie(TOKEN_COOKIE);
+  const postId = params.id;
+
+  const load = async () => {
+    if (!token) return router.push("/login");
+    try {
+      setError(null);
+      const postData = await getPostById(postId);
+      setPost(postData);
+    } catch {
+      setError("No se pudo cargar el post.");
+    }
+  };
+
+  useEffect(() => {
+    if (postId) {
+      void load();
+    }
+  }, [postId]);
+
+  if (error) return <p>{error}</p>;
+  if (!post) return <p>Cargando post...</p>;
 
   return (
-    <div>
-      <h1>{post.content}</h1>
-      <p>@{post.author.username}</p>
+    <section className="pageSection">
+      <PostCard
+        post={post}
+        onLike={async (id) => {
+          await likePost(id);
+          await load();
+        }}
+        onRetweet={async (id) => {
+          await retweetPost(id);
+          await load();
+        }}
+      />
+    </section>
+  );
+};
 
-      <h2>Comentarios</h2>
-      {comments.map(c => (
-        <p key={c.id}>{c.content}</p>
-      ))}
-    </div>
-  )
-}
+export default PostPage;
