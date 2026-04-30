@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { loginUser, registerUser } from "@/lib/api/twitter";
+import { loginUser, registerUser } from "@/lib/api/apit";
 import { setCookie, TOKEN_COOKIE, USER_ID_COOKIE, USERNAME_COOKIE } from "@/lib/auth/token";
 
 const LoginPage = () => {

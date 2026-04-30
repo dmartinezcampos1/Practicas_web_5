@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import PostCard from "@/app/components/PostCard/PostCard";
 import { getCookie, TOKEN_COOKIE } from "@/lib/auth/token";
-import { getMyProfile, retweetPost, followUser, likePost } from "@/lib/api/twitter";
-import type { PostResponse, UserResponse } from "@/types/twitter";
+import { getMyProfile, retweetPost, followUser, likePost } from "@/lib/api/apit";
+import type { PostResponse, UserResponse } from "@/types/types";
 
 const ProfilePage = () => {
   const params = useParams<{ id: string }>();

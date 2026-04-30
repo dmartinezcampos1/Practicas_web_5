@@ -5,7 +5,7 @@ import {
   PostResponse,
   ProfileResponse,
   UserResponse,
-} from "../../types/twitter";
+} from "../../types/types";
 import axios from "axios";
 
 const API_URL = "https://backend-p4-klvc.onrender.com";

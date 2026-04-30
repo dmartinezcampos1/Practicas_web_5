@@ -4,8 +4,8 @@ import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import PostCard from "./components/PostCard/PostCard";
 import { getCookie, TOKEN_COOKIE } from "@/lib/auth/token";
-import { createPost, getPosts, retweetPost, likePost } from "@/lib/api/twitter";
-import type { PostResponse } from "@/types/twitter";
+import { createPost, getPosts, retweetPost, likePost } from "@/lib/api/apit";
+import type { PostResponse } from "@/types/types";
 
 const Home = () => {
   const router = useRouter();

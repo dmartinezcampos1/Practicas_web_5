@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import type { PostResponse } from "@/types/twitter";
+import type { PostResponse } from "@/types/types";
 
 type Props = {
   post: PostResponse;
